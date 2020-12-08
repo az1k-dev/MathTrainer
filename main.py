@@ -6,7 +6,8 @@
 import sys
 from PyQt5 import uic
 from PyQt5.QtCore import QObject, pyqtSignal, QTimer, QTime, Qt
-from PyQt5.QtWidgets import QApplication, QMainWindow, QInputDialog, QTableWidgetItem
+from PyQt5.QtWidgets import QApplication, QMainWindow, QInputDialog, \
+    QTableWidgetItem
 from PyQt5.QtGui import QIntValidator
 import sqlite3
 import threading
@@ -116,27 +117,34 @@ class AuthorizationWindow(QMainWindow):
     def __init__(self):
         # Инициализация класса
 
-        # Инициализация родителского класса и загрузка дизайна программы из ui файла
+        # Инициализация родителского класса и
+        # загрузка дизайна программы из ui файла
         super().__init__()
         uic.loadUi('UI/AuthorizationWindow.ui', self)
 
         # Проверка наличия сохраненного пользователя
-        remembered_user = sql_user_to_dict(SQL['cur'].execute("""SELECT * FROM Users
-            WHERE remember = 1""").fetchone())
+        remembered_user = sql_user_to_dict(SQL['cur'].execute(
+            """SELECT * FROM Users
+            WHERE remember = 1"""
+        ).fetchone())
 
         if remembered_user:
-            # При наличии сохраненного пользователя, программа запускает главное окно программы
+            # При наличии сохраненного пользователя,
+            # программа запускает главное окно программы
             self.show_main_window(remembered_user)
         else:
             # Создание слотов для нажатия кнопок
             self.login_button.clicked.connect(self.login)
-            self.registration_button.clicked.connect(self.show_registration_window)
+            self.registration_button.clicked.connect(
+                self.show_registration_window
+            )
 
             # Показ окна авторизации
             self.show()
 
     def login(self):
-        # Функция для проверки авторизационных данных и выполнения последующих действий
+        # Функция для проверки авторизационных данных
+        # и выполнения последующих действий
 
         # Получение данных из полей ввода
         login = self.login_input.text()
@@ -149,9 +157,12 @@ class AuthorizationWindow(QMainWindow):
         elif not password:
             self.error_line.setText('Введите логин и пароль')
         else:
-            # При корректности введенных данных начинается проверка по базе данных
-            user_sql = sql_user_to_dict(SQL['cur'].execute("""SELECT * FROM Users
-                WHERE login = ?""", (login,)).fetchone())
+            # При корректности введенных данных
+            # начинается проверка по базе данных
+            user_sql = sql_user_to_dict(SQL['cur'].execute(
+                """SELECT * FROM Users
+                WHERE login = ?""", (login,)
+            ).fetchone())
 
             if user_sql:
                 if password == user_sql['password']:
@@ -185,7 +196,8 @@ class RegistrationWindow(QMainWindow):
     def __init__(self):
         # Инициализация класса
 
-        # Инициализация родителского класса и загрузка дизайна программы из ui файла
+        # Инициализация родителского класса и
+        # загрузка дизайна программы из ui файла
         super().__init__()
         uic.loadUi('UI/RegistrationWindow.ui', self)
 
@@ -197,13 +209,15 @@ class RegistrationWindow(QMainWindow):
         self.registered = False
 
     def closeEvent(self, event):
-        # Переопределение сигнала closeEvent для открытия окна авторизации при закрытии окна
+        # Переопределение сигнала closeEvent для
+        # открытия окна авторизации при закрытии окна
         if not self.registered:
             # Окно авторизации создается только при отсутствии регистрации
             self.show_auth_window()
 
     def registration(self):
-        # Функция для проверки регистрационных данных и выполнения последующих действий
+        # Функция для проверки регистрационных
+        # данных и выполнения последующих действий
 
         # Получение данных из полей ввода
         name = self.name_input.text()
@@ -227,23 +241,32 @@ class RegistrationWindow(QMainWindow):
         if login_check:
             self.error_line.setText('Логин занят')
             reg_check = False
-        if not name or not surname or not login or not password_1 or not password_2:
+        if not name or not surname or not \
+                login or not password_1 or not password_2:
             self.error_line.setText('Заполните все поля')
             reg_check = False
 
-        # При успешной проверке регистрация пользователя и показ главного окна программы
+        # При успешной проверке регистрация пользователя
+        # и показ главного окна программы
         if reg_check:
             # Занесение данных в базу данных
-            SQL['cur'].execute("""INSERT INTO Users(login, password, name, surname, remember)
-                VALUES(?, ?, ?, ?, ?)""", (login, password_1, name, surname, remember)).fetchall()
+            SQL['cur'].execute(
+                """INSERT INTO Users(login, password, name, surname, remember)
+                VALUES(?, ?, ?, ?, ?)""",
+                (login, password_1, name, surname, remember)
+            ).fetchall()
+
             SQL['con'].commit()
 
             # Получение данных для передачи в главное окно
-            self.user_info = sql_user_to_dict(SQL['cur'].execute("""SELECT * from Users
-                WHERE login = ?""", (login,)).fetchone())
+            self.user_info = sql_user_to_dict(SQL['cur'].execute(
+                """SELECT * from Users
+                WHERE login = ?""", (login,)
+            ).fetchone())
 
-            # Изменение переменной для предотвращения открытия окна авторизации событием
-            # closeEvent при закрытии данного окна в функции show_main_window
+            # Изменение переменной для предотвращения открытия окна
+            # авторизации событием closeEvent при закрытии данного
+            # окна в функции show_main_window
             self.registered = True
 
             # Показ главного окна программы
@@ -270,7 +293,8 @@ class MainWindow(QMainWindow):
     def __init__(self, user_info):
         # Инициализация класса
 
-        # Инициализация родителского класса и загрузка дизайна программы из ui файла
+        # Инициализация родителского класса и
+        # загрузка дизайна программы из ui файла
         super().__init__()
         uic.loadUi('UI/MainWindow.ui', self)
 
@@ -285,14 +309,17 @@ class MainWindow(QMainWindow):
         self.exit_account_button.triggered.connect(self.exit_account)
         self.exit_program_button.triggered.connect(self.close)
         self.help_button.triggered.connect(self.show_help_window)
-        self.personal_info_button.triggered.connect(self.show_personal_info_window)
+        self.personal_info_button.triggered.connect(
+            self.show_personal_info_window)
         self.settings_button.triggered.connect(self.show_settings_window)
         self.statistic_button.triggered.connect(self.show_statistic_window)
 
         # Создание слотов для смены ComboBox-ов
         self.difficult_box.currentIndexChanged.connect(self.update_top_list)
-        self.difficult_box.currentIndexChanged.connect(self.update_difficult_info)
-        self.stop_mode_box.currentIndexChanged.connect(self.update_stop_count_line)
+        self.difficult_box.currentIndexChanged.connect(
+            self.update_difficult_info)
+        self.stop_mode_box.currentIndexChanged.connect(
+            self.update_stop_count_line)
 
         # Создание слотов для нажатия кнопки основного экрана
         self.start_button.clicked.connect(self.show_solve_window)
@@ -349,46 +376,66 @@ class MainWindow(QMainWindow):
         difficult_info = DIFFICUTL_DICT[index]
 
         if len(difficult_info) == 2:
-            fill_lst = [str(difficult_info[0]) + '-' + str(difficult_info[1]), 'отсутствует']
+            fill_lst = [str(difficult_info[0]) + '-' + str(difficult_info[1]),
+                        'отсутствует']
+
         elif len(difficult_info) == 4:
             fill_lst = [str(difficult_info[0]) + '-' + str(difficult_info[1]),
                         str(difficult_info[2]) + '-' + str(difficult_info[3])]
         else:
             fill_lst = ['', '']
 
-        self.difficult_info.setText('Сложение и вычитание: {}\nУмножение и деление: {}'
-                                    ''.format(*fill_lst))
+        self.difficult_info.setText(
+            'Сложение и вычитание: {}\nУмножение и деление: {}'
+                .format(*fill_lst)
+        )
 
     def update_top_list(self, index):
-        # Функция для заполнения таблицы лучших результатов пользователя для определенного уровня
+        # Функция для заполнения таблицы лучших результатов
+        # пользователя для определенного уровня
         # Запускается каждый раз при выборе уровня сложности
         # Принимает индекс выбранного уровня
 
         # Получаем результаты из базы данных и сортируем по коэфифиценту
-        results = SQL['cur'].execute('''SELECT * from Results
-            WHERE user_id = ? AND difficult = ?''', (self.user_info['id'], index)).fetchall()
+        results = SQL['cur'].execute(
+            '''SELECT * from Results
+            WHERE user_id = ? AND difficult = ?''',
+            (self.user_info['id'], index)
+        ).fetchall()
+
         results.sort(key=lambda s: s[-1], reverse=True)
 
-        # Очищаем виджет от предыдущих результатов и заполняем навзвания столбцов
+        # Очищаем виджет от предыдущих результатов
+        # и заполняем навзвания столбцов
         self.best_results_table_widget.clear()
-        self.best_results_table_widget.setHorizontalHeaderLabels(['Дата',
-                                                                  'Время',
-                                                                  'Ответов',
-                                                                  'Верных ответов',
-                                                                  'Коэфицент'])
+        self.best_results_table_widget.setHorizontalHeaderLabels(
+            ['Дата', 'Время', 'Ответов', 'Верных ответов', 'Коэфицент']
+        )
 
         # Заполняем первыми 5 результатами и ровняем таблицу
         for i, lst in enumerate(results[:5]):
-            self.best_results_table_widget.setItem(i, 0, QTableWidgetItem(lst[2][:16]))
-            self.best_results_table_widget.setItem(i, 1, QTableWidgetItem(str(round(lst[4], 2))))
-            self.best_results_table_widget.setItem(i, 2, QTableWidgetItem(str(lst[-3])))
-            self.best_results_table_widget.setItem(i, 3, QTableWidgetItem(str(lst[-2])))
-            self.best_results_table_widget.setItem(i, 4, QTableWidgetItem(str(round(lst[-1], 2))))
+            self.best_results_table_widget.setItem(
+                i, 0, QTableWidgetItem(lst[2][:16])
+            )
+            self.best_results_table_widget.setItem(
+                i, 1, QTableWidgetItem(str(round(lst[4], 2)))
+            )
+            self.best_results_table_widget.setItem(
+                i, 2, QTableWidgetItem(str(lst[-3]))
+            )
+            self.best_results_table_widget.setItem(
+                i, 3, QTableWidgetItem(str(lst[-2]))
+            )
+            self.best_results_table_widget.setItem(
+                i, 4, QTableWidgetItem(str(round(lst[-1], 2)))
+            )
+
         self.best_results_table_widget.resizeColumnsToContents()
 
     def update_stop_count_line(self, index):
-        # Функция для изменения фонового текста поля ввода количества времени, примеров
-        # или верных ответов для остановки решения в зависимости от выбранного режима
+        # Функция для изменения фонового текста поля ввода количества
+        # времени, примеров или верных ответов для остановки решения
+        # в зависимости от выбранного режима
         # Запускается каждый раз при выборе режима остноавки
         # Принимает индекс выбранного режима
 
@@ -401,15 +448,17 @@ class MainWindow(QMainWindow):
         self.stop_count_line.setPlaceholderText(mode_information[index])
 
     def show_solve_window(self):
-        # Функция для инициализации и показа окна решения примеров с проверкой корректности
-        # введенного в поле значения
+        # Функция для инициализации и показа окна решения примеров
+        # с проверкой корректности введенного в поле значения
 
         if self.stop_count_line.text():
             if int(self.stop_count_line.text()) > 0:
-                self.solve_window = SolveWindow(difficult=self.difficult_box.currentIndex(),
-                                                stop_mode=self.stop_mode_box.currentIndex(),
-                                                stop_count=int(self.stop_count_line.text()),
-                                                user_info=self.user_info)
+                self.solve_window = SolveWindow(
+                    difficult=self.difficult_box.currentIndex(),
+                    stop_mode=self.stop_mode_box.currentIndex(),
+                    stop_count=int(self.stop_count_line.text()),
+                    user_info=self.user_info
+                )
                 self.solve_window.show()
                 self.close()
             else:
@@ -435,7 +484,8 @@ class PersonalInfoWindow(QMainWindow):
     def __init__(self, user_info):
         # Инициализация класса
 
-        # Инициализация родителского класса и загрузка дизайна программы из ui файла
+        # Инициализация родителского класса и
+        # загрузка дизайна программы из ui файла
         super().__init__()
         uic.loadUi('UI/PersonalInfoWindow.ui', self)
 
@@ -448,13 +498,17 @@ class PersonalInfoWindow(QMainWindow):
 
         # Создание слотов для нажатий кнопок
 
-        self.password_change_button.clicked.connect(self.show_change_password_window)
+        self.password_change_button.clicked.connect(
+            self.show_change_password_window
+        )
 
         self.account_delete_button.clicked.connect(self.delete_account)
 
         # Заполнение окна данными
         self.login_label.setText('Логин: ' + self.user_info['login'])
-        self.name_label.setText(self.user_info['surname'] + ' ' + self.user_info['name'])
+        self.name_label.setText(
+            self.user_info['surname'] + ' ' + self.user_info['name']
+        )
         self.id_label.setText('ID: ' + str(self.user_info['id']))
 
     def show_change_password_window(self):
@@ -557,8 +611,9 @@ class SolveWindow(QMainWindow):
         self.remained.hide()
 
         # Из базы данных загружаются настройки
-        self.settings = sql_settings_to_dict(SQL['cur']
-                                             .execute('''SELECT * from Settings''').fetchall())
+        self.settings = sql_settings_to_dict(
+            SQL['cur'].execute('''SELECT * from Settings''').fetchall()
+        )
 
         # Создается слот для начала решения после отсчета
         COMMUNICATE_CLASS.round_started.connect(self.start)
@@ -578,7 +633,8 @@ class SolveWindow(QMainWindow):
             time = QTime()
             time.start()
             while True:
-                if time.elapsed() > 1000 or self.closed:  # При достижении 1 секунды, основной цикл перезапускается
+                # При достижении 1 секунды, основной цикл перезапускается
+                if time.elapsed() > 1000 or self.closed:
                     break
 
             # При закрытии окна отсчет останавливается
@@ -633,9 +689,11 @@ class SolveWindow(QMainWindow):
             self.user_info['id'], datetime.datetime.today(),
             self.difficult, self.solve_time, self.count,
             self.right_count, coef)
-        SQL['cur'].execute('''INSERT INTO Results(user_id, datetime, 
-            difficult, solve_duration, tasks_count, correct_answers_count, coefficient)
-            VALUES(?, ?, ?, ?, ?, ?, ?)''', values).fetchall()
+        SQL['cur'].execute(
+            '''INSERT INTO Results(user_id, datetime, difficult, 
+            solve_duration, tasks_count,correct_answers_count, coefficient)
+            VALUES(?, ?, ?, ?, ?, ?, ?)''', values
+        ).fetchall()
         SQL['con'].commit()
 
         # Создается словарь для передачи в следующее окно
@@ -673,7 +731,8 @@ class SolveWindow(QMainWindow):
                 self.new_question()
 
     def count_plus(self, right=False):
-        # Функция для увеличения количества ответов и, при необходимости, количества верных ответов
+        # Функция для увеличения количества ответов и,
+        # при необходимости, количества верных ответов
         self.count += 1
         if right:
             self.right_count += 1
@@ -757,7 +816,9 @@ class SettingsWindow(QMainWindow):
             SQL['cur'].execute('''SELECT * from Settings''').fetchall())
 
         # Показ загруженных настроек в окне
-        index = self.countdown_duration_box.findText(str(self.settings['countdown_duration']))
+        index = self.countdown_duration_box.findText(
+            str(self.settings['countdown_duration'])
+        )
         self.countdown_duration_box.setCurrentIndex(index)
 
         self.show_count_box.setTristate(False)
@@ -769,8 +830,12 @@ class SettingsWindow(QMainWindow):
     def save_settings(self):
         # Функция для сохранения настроек в базу данных
 
-        settings = {'countdown_duration': int(self.countdown_duration_box.currentText()),
-                    'show_count': self.show_count_box.checkState()}
+        settings = {
+            'countdown_duration': int(
+                self.countdown_duration_box.currentText()
+            ),
+            'show_count': self.show_count_box.checkState()
+        }
 
         for i in settings.keys():
             SQL['cur'].execute('''UPDATE Settings
@@ -823,14 +888,17 @@ class StatisticWindow(QMainWindow):
         self.update_table_widget(0)
 
     def update_table_widget(self, index):
-        # Функция для заполнения таблицы результатов и  остальной информации
-        # пользователя для определенного уровня
+        # Функция для заполнения таблицы результатов и остальной
+        # информации пользователя для определенного уровня
         # Запускается каждый раз при выборе уровня сложности
         # Принимает индекс выбранного уровня
 
         # Получаем данные из базы данных
-        results = SQL['cur'].execute('''SELECT * from Results 
-            WHERE user_id = ? AND difficult = ?''', (self.user_info['id'], index)).fetchall()
+        results = SQL['cur'].execute(
+            '''SELECT * from Results 
+            WHERE user_id = ? AND difficult = ?''',
+            (self.user_info['id'], index)
+        ).fetchall()
 
         # Очищаем таблицу
         self.results_table_widget.clear()
@@ -840,38 +908,57 @@ class StatisticWindow(QMainWindow):
         if results:
             # При наличии результатов вычисляем средние значения
             total_task_count = sum(map(lambda s: s[-2], results))
-            average_coef = round(sum(map(lambda s: s[-1], results)) / len(results), 4)
+            average_coef = round(
+                sum(map(lambda s: s[-1], results)) / len(results), 4
+            )
             average_time = round(1 / average_coef, 4)
 
             # Заполняем поля
-            self.total_task_count_label.setText('Всего решено примеров: ' + str(total_task_count))
-            self.average_coef_label.setText('Средний коэфицент: ' + str(average_coef))
+            self.total_task_count_label.setText(
+                'Всего решено примеров: ' + str(total_task_count)
+            )
+            self.average_coef_label.setText(
+                'Средний коэфицент: ' + str(average_coef)
+            )
             self.average_time_label.setText(
-                'Среднее время на один пример: ' + str(average_time) + ' сек.')
+                'Среднее время на один пример: ' + str(average_time) + ' сек.'
+            )
 
             # Готовим таблицу
             self.results_table_widget.setColumnCount(5)
-            self.results_table_widget.setHorizontalHeaderLabels(['Дата',
-                                                                 'Время',
-                                                                 'Ответов',
-                                                                 'Верных ответов',
-                                                                 'Коэфицент'])
+            self.results_table_widget.setHorizontalHeaderLabels(
+                ['Дата', 'Время', 'Ответов', 'Верных ответов', 'Коэфицент']
+            )
 
             # Заполняем и равняем таблицу
             for i, lst in enumerate(results):
-                self.results_table_widget.setRowCount(self.results_table_widget.rowCount() + 1)
-                self.results_table_widget.setItem(i, 0, QTableWidgetItem(lst[2][:16]))
-                self.results_table_widget.setItem(i, 1, QTableWidgetItem(str(round(lst[4], 2))))
-                self.results_table_widget.setItem(i, 2, QTableWidgetItem(str(lst[-3])))
-                self.results_table_widget.setItem(i, 3, QTableWidgetItem(str(lst[-2])))
-                self.results_table_widget.setItem(i, 4, QTableWidgetItem(str(round(lst[-1], 2))))
+                self.results_table_widget.setRowCount(
+                    self.results_table_widget.rowCount() + 1
+                )
+                self.results_table_widget.setItem(
+                    i, 0, QTableWidgetItem(lst[2][:16])
+                )
+                self.results_table_widget.setItem(
+                    i, 1, QTableWidgetItem(str(round(lst[4], 2)))
+                )
+                self.results_table_widget.setItem(
+                    i, 2, QTableWidgetItem(str(lst[-3]))
+                )
+                self.results_table_widget.setItem(
+                    i, 3, QTableWidgetItem(str(lst[-2]))
+                )
+                self.results_table_widget.setItem(
+                    i, 4, QTableWidgetItem(str(round(lst[-1], 2)))
+                )
             self.results_table_widget.resizeColumnsToContents()
         else:
             # При отсутствии данных очищаем окно
             self.results_table_widget.setColumnCount(0)
             self.total_task_count_label.setText('Всего решено примеров: 0')
             self.average_coef_label.setText('Средний коэфицент: 0')
-            self.average_time_label.setText('Среднее время на один пример: 0 сек.')
+            self.average_time_label.setText(
+                'Среднее время на один пример: 0 сек.'
+            )
 
 
 if __name__ == '__main__':
