@@ -1,8 +1,3 @@
-# coding=UTF-8
-# Проект PyQT
-# Математический тренажер
-# Автор: Байрамов Азамат
-
 import sys
 from PyQt5 import uic
 from PyQt5.QtCore import QObject, pyqtSignal, QTimer, QTime, Qt
@@ -11,6 +6,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QInputDialog, \
 from PyQt5.QtGui import QIntValidator
 import sqlite3
 import threading
+import make_db
 from random import choice, randint
 import time
 import datetime
@@ -30,10 +26,10 @@ def sql_user_to_dict(user_sql):
         return False
 
 
-def sql_settings_to_dict(setttings_sql):
+def sql_settings_to_dict(settings_sql):
     # Функция для преобразования SQL-запроса настроек в словарь
     out = {}
-    for i in setttings_sql:
+    for i in settings_sql:
         out[i[1]] = i[2]
     return out
 
@@ -56,7 +52,7 @@ def make_question(difficult):
         '/': lambda a, b: int(a / b)
     }
 
-    ints = DIFFICUTL_DICT[difficult]
+    ints = DIFFICULT_DICT[difficult]
 
     if len(ints) == 2:
         znak = choice(['+', '-'])
@@ -93,11 +89,16 @@ class Communicate(QObject):
 
 # Создаем постоянные
 DATABASE_NAME = 'math_training.db'
+
+# При отсутсвии БД создаем его
+if not make_db.check_database(DATABASE_NAME):
+    make_db.make_database(DATABASE_NAME)
+
 sql_con = sqlite3.connect(DATABASE_NAME)
 sql_cur = sql_con.cursor()
 SQL = {'con': sql_con, 'cur': sql_cur}
 COMMUNICATE_CLASS = Communicate()
-DIFFICUTL_DICT = {
+DIFFICULT_DICT = {
     0: [1, 10],
     1: [10, 20, 2, 10],
     2: [20, 100, 10, 20],
@@ -373,7 +374,7 @@ class MainWindow(QMainWindow):
         # Функция для заполнения информации об уровне сложности
         # Запускается каждый раз при выборе уровня сложности
         # Принимает индекс выбранного уровня
-        difficult_info = DIFFICUTL_DICT[index]
+        difficult_info = DIFFICULT_DICT[index]
 
         if len(difficult_info) == 2:
             fill_lst = [str(difficult_info[0]) + '-' + str(difficult_info[1]),
