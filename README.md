@@ -51,3 +51,5 @@ This is a program, where you can improve your counting skills.
 
 ### Help page
 ![image](https://i.ibb.co/MM1LThX/Help-page.png)
+
+#### [🔼 Go up](#mathtrainer)
